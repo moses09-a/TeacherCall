@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Represents a teacher and their current availability status.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name of the teacher."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["available", "in_class", "consulting", "away"],
+          "description": "Current availability status."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last time the status was updated."
+        }
+      },
+      "required": ["name", "status"]
+    },
+    "Call": {
+      "title": "Call",
+      "description": "A student call request for a specific teacher.",
+      "type": "object",
+      "properties": {
+        "teacherId": {
+          "type": "string",
+          "description": "ID of the teacher being called."
+        },
+        "teacherName": {
+          "type": "string",
+          "description": "Name of the teacher being called."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Time the call was made."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "checked"],
+          "description": "Whether the call is currently active or has been acknowledged."
+        }
+      },
+      "required": ["teacherId", "teacherName", "timestamp", "status"]
+    }
+  },
+  "firestore": {
+    "/teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Individual teacher records and statuses."
+    },
+    "/calls/{callId}": {
+      "schema": "Call",
+      "description": "Real-time list of student calls."
+    }
+  }
+}

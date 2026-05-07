@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Teacher Rules
+    function isValidTeacher(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 50
+        && data.status in ['available', 'in_class', 'consulting', 'away']
+        && data.updatedAt is number;
+    }
+
+    match /teachers/{teacherId} {
+      allow list, get: if true; // Public hallway tablet needs to read statuses
+      allow create: if isValidTeacher(request.resource.data);
+      allow update: if isValidTeacher(request.resource.data) 
+        && (
+          // Action: Status Update
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'status', 'updatedAt'])
+        );
+      allow delete: if true; // Simplified for vibe coding
+    }
+
+    // Call Rules
+    function isValidCall(data) {
+      return data.teacherId is string && data.teacherId.size() <= 128
+        && data.teacherName is string && data.teacherName.size() <= 50
+        && data.timestamp is number
+        && data.status in ['active', 'checked'];
+    }
+
+    match /calls/{callId} {
+      allow list: if true;
+      allow get: if true;
+      allow create: if isValidCall(request.resource.data);
+      allow update: if isValidCall(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow delete: if false; // Calls are never deleted, only status changed
+    }
+  }
+}

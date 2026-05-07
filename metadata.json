@@ -1,0 +1,6 @@
+{
+  "name": "School Call Hub",
+  "description": "A real-time teacher-student calling system for exams and restricted access periods.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
